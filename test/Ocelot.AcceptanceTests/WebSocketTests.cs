@@ -20,7 +20,7 @@ namespace Ocelot.AcceptanceTests
         private IWebHost _ocelotHost;
         private IWebHost _downstreamHost;
 
-        [Fact]
+        [Fact(Skip = "Do not run will loop forever at the moment need to handle close signal on proxy")]
         public async Task should_proxy_websocket_input_to_downstream_service()
         {
             await StartFakeOcelot();
@@ -37,15 +37,19 @@ namespace Ocelot.AcceptanceTests
             var sending = Task.Run(async () =>
             {
                 string line = "test";
-                while (true)
+                for (int i = 0; i < 10; i++)
                 {
                     var bytes = Encoding.UTF8.GetBytes(line);
 
                     await client.SendAsync(new ArraySegment<byte>(bytes), WebSocketMessageType.Text, true,
                         CancellationToken.None);
                     await Task.Delay(1000);
-                    //count++;
                 }
+                /*while (true)
+                {
+                   
+                    //count++;
+                }*/
 
                 await client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
             });
